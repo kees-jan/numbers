@@ -1,4 +1,32 @@
+#include <ostream>
+
 #include <catch2/catch.hpp>
+
+#include <bignum_template.hh>
+
+using BigChar = BigNumT<unsigned char>;
+
+static std::ostream& operator<<(std::ostream& os, const BigChar& b)
+{
+  return b.dumpTo(os);
+}
+
+
+TEST_CASE("BigNums can be initialized", "[Bignum]")
+{
+  REQUIRE(BigChar(0).toBase() == 0);
+  REQUIRE(BigChar(1).toBase() == 1);
+
+  REQUIRE(BigChar(0) == 0);
+  REQUIRE(BigChar(1) == 1);
+  REQUIRE(BigChar(-1) == -1);
+  REQUIRE(BigChar(-1) != 255);
+  REQUIRE(BigChar(-1) != 1);
+
+  REQUIRE_FALSE(BigChar(1) == 0);
+  REQUIRE_FALSE(BigChar(1) != 1);
+}
+
 
 constexpr unsigned int Factorial(unsigned int number)
 {
