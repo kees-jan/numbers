@@ -7,7 +7,7 @@ class [[nodiscard]] BigNumT {
 public:
   using Me = BigNumT<Base>;
 
-  constexpr BigNumT(long v) : value(v), positive(v>=0) {};
+  constexpr BigNumT(long v) : positive(v>=0), value(static_cast<Base>(v)) {};
   [[nodiscard]] constexpr Base toBase() const { return value; }
 
   std::ostream &dumpTo(std::ostream & os) const
