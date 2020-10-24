@@ -1,14 +1,58 @@
+#include <iostream>
 #include <catch2/catch.hpp>
 
-unsigned int Factorial(unsigned int number)
+#include "bignum_template.hh"
+
+using BigChar = BigNumT<unsigned char>;
+
+static std::ostream &operator<<(std::ostream &os, const BigChar &b)
 {
-  return number <= 1 ? number : Factorial(number - 1) * number;
+  return b.dumpTo(os);
 }
 
-TEST_CASE("Factorials are computed", "[factorial]")
+TEST_CASE("BigNums can be initialized")
 {
-  REQUIRE(Factorial(1) == 1);
-  REQUIRE(Factorial(2) == 2);
-  REQUIRE(Factorial(3) == 6);
-  REQUIRE(Factorial(10) == 3628800);
+  REQUIRE(BigChar(0).toBase() == 0);
+  REQUIRE(BigChar(1).toBase() == 1);
+
+  REQUIRE(BigChar(0) == 0);
+  REQUIRE(BigChar(1) == 1);
+  REQUIRE(BigChar(-1) == -1);
+  REQUIRE(BigChar(-1) != 255);
+  REQUIRE(BigChar(-1) != 1);
+
+  REQUIRE_FALSE(BigChar(1) == 0);
+  REQUIRE_FALSE(BigChar(1) != 1);
+
+  //  REQUIRE(BigChar({ 0 }) == BigChar({ 0, 0 }));
+  //  REQUIRE(BigChar({ 0xFF }) == BigChar({ 0xFF, 0xFF }));
+}
+
+TEST_CASE("Negative values")
+{
+  REQUIRE(BigChar(-1).negative());
+  REQUIRE_FALSE(BigChar(-1).positive());
+
+  REQUIRE(BigChar(0).positive());
+  REQUIRE_FALSE(BigChar(0).negative());
+
+  REQUIRE(BigChar(1).positive());
+  REQUIRE_FALSE(BigChar(1).negative());
+}
+
+TEST_CASE("BigNums equal longs")
+{
+  auto i = GENERATE(take(10, random(std::numeric_limits<long>::min(), std::numeric_limits<long>::max())));
+
+  REQUIRE(BigChar(i) == i);
+  REQUIRE(BigChar(i) == BigChar(i));
+  REQUIRE(BigChar(i) != BigChar(i + 0x100000000l));
+}
+
+TEST_CASE("If the longs don't equal, neither do the BigNums")
+{
+  auto i = GENERATE(take(100, random(std::numeric_limits<long>::min(), std::numeric_limits<long>::max())));
+  auto j = GENERATE(take(100, random(std::numeric_limits<long>::min(), std::numeric_limits<long>::max())));
+
+  REQUIRE((BigChar(i) == BigChar(j)) == (i == j));
 }

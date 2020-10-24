@@ -3,6 +3,7 @@
 #include <catch2/catch.hpp>
 
 #include <bignum_template.hh>
+#include <iostream>
 
 using BigChar = BigNumT<unsigned char>;
 
@@ -10,7 +11,6 @@ static std::ostream& operator<<(std::ostream& os, const BigChar& b)
 {
   return b.dumpTo(os);
 }
-
 
 TEST_CASE("BigNums can be initialized", "[Bignum]")
 {
@@ -27,16 +27,21 @@ TEST_CASE("BigNums can be initialized", "[Bignum]")
   REQUIRE_FALSE(BigChar(1) != 1);
 }
 
-
-constexpr unsigned int Factorial(unsigned int number)
+TEST_CASE("BigNums equal longs")
 {
-  return number <= 1 ? number : Factorial(number - 1) * number;
+  auto i = GENERATE(take(10, random(std::numeric_limits<long>::min(), std::numeric_limits<long>::max())));
+  std::cout << i << '\n';
+
+  REQUIRE(BigChar(i) == i);
+  REQUIRE(BigChar(i) == BigChar(i));
+  REQUIRE(BigChar(i) != BigChar(i+0x100000000l));
+
 }
 
-TEST_CASE("Factorials are computed with constexpr", "[factorial]")
+TEST_CASE("If the longs don't equal, neither do the BigNums")
 {
-  STATIC_REQUIRE(Factorial(1) == 1);
-  STATIC_REQUIRE(Factorial(2) == 2);
-  STATIC_REQUIRE(Factorial(3) == 6);
-  STATIC_REQUIRE(Factorial(10) == 3628800);
+  auto i = GENERATE(take(100, random(std::numeric_limits<long>::min(), std::numeric_limits<long>::max())));
+  auto j = GENERATE(take(100, random(std::numeric_limits<long>::min(), std::numeric_limits<long>::max())));
+
+  REQUIRE((BigChar(i)==BigChar(j)) == (i==j));
 }
