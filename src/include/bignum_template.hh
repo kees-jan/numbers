@@ -2,6 +2,7 @@
 
 #include <ostream>
 #include <vector>
+// #include "magnitude.hh"
 
 template<typename Base>
 class [[nodiscard]] BigNumT
@@ -9,14 +10,12 @@ class [[nodiscard]] BigNumT
 public:
   using Me = BigNumT<Base>;
 
-  constexpr explicit BigNumT(long v) : value(fromLong(v)) {}
-  constexpr BigNumT(std::initializer_list<Base> v) : value(v) {}
-
-  [[nodiscard]] constexpr Base toBase() const { return value[0]; }
+  explicit BigNumT(long v) : isPositive(v >= 0), value(fromLong(static_cast<unsigned long>(std::abs(v)))) {}
+  [[maybe_unused]] BigNumT(std::initializer_list<Base> v) : isPositive(true), value(v) {}
 
   std::ostream &dumpTo(std::ostream &os) const
   {
-    os << "BigNum(";
+    os << "BigNum(" << (isPositive ? '+' : '-') << ", ";
     auto c = value.begin();
     if (c != value.end()) {
       os << static_cast<unsigned long>(*c);
@@ -32,61 +31,102 @@ public:
 
   [[nodiscard]] bool negative() const
   {
-    return *value.rbegin() >> (std::numeric_limits<Base>::digits - 1);
+    return !isPositive;
   }
 
-  [[nodiscard]] bool positive() const { return !negative(); }
-
-  [[nodiscard]] constexpr bool operator==(const Me &other) const
+  [[nodiscard]] bool positive() const
   {
-    return value == other.value;
+    return isPositive;
   }
 
-  [[nodiscard]] constexpr bool operator!=(const Me &other) const
+  [[nodiscard]] bool operator==(const Me &other) const
   {
-    return !(other == *this);
+    return value == other.value && isPositive == other.isPositive;
+  }
+
+  [[nodiscard]] bool operator!=(const Me &other) const
+  {
+    return !(other == *this);//NOLINT:(Simplify)
+  }
+
+  [[nodiscard]] bool operator<(const Me &other) const
+  {
+    if (isPositive) {
+      if (other.isPositive) {
+        return magnitude_compare(value, other.value) < 0;
+      }
+      return false;
+    }
+    if (other.isPositive) {
+      return true;
+    }
+    return magnitude_compare(value, other.value) > 0;
   }
 
 private:
+  bool isPositive;
   std::vector<Base> value;
 
-  static std::vector<Base> fromLong(unsigned long value, bool positive)
+  [[nodiscard]] static std::vector<Base> fromLong(unsigned long value)
   {
     std::vector<Base> result;
     while (value != 0) {
       result.push_back(toBase(value & std::numeric_limits<Base>::max()));
       value >>= std::numeric_limits<Base>::digits;
     }
-    result.push_back(toBase(std::numeric_limits<Base>::max() * (1 - positive)));
 
     return result;
   }
 
-  static std::vector<Base> fromLong(unsigned long value)
+  [[nodiscard]] static int magnitude_compare(const std::vector<Base> &left, const std::vector<Base> &right)
   {
-    return fromLong(value, true);
+    auto cleft = left.begin();
+    auto cright = right.begin();
+    while (cleft != left.end() && cright != right.end() && *cleft == *cright) {
+      ++cleft;
+      ++cright;
+    }
+    if (cleft == left.end() && cright == right.end()) {
+      return 0;
+    }
+    if (cleft != left.end() && cright != right.end()) {
+      return *cleft - *cright;
+    }
+    if (cleft != left.end()) {
+      if (all_zero(cleft, left.end())) {
+        return 0;
+      }
+      return 1;
+    }
+    if (all_zero(cright, right.end())) {
+      return 0;
+    }
+    return -1;
   }
 
-  static std::vector<Base> fromLong(long value)
+  [[nodiscard]] static bool all_zero(typename std::vector<Base>::const_iterator cur, typename std::vector<Base>::const_iterator end)
   {
-    return fromLong(static_cast<unsigned long>(value), value >= 0);
+    while (cur != end && *cur == 0) {
+      ++cur;
+    }
+    return cur == end;
   }
 
   template<typename T>
-  [[nodiscard]] constexpr static Base toBase(const T v)
+  [[nodiscard]] static Base toBase(const T v)
   {
     return static_cast<Base>(v);
   }
 };
 
 template<typename Base>
-constexpr bool operator==(const BigNumT<Base> &left, long right) { return left == BigNumT<Base>(right); }
+bool operator==(const BigNumT<Base> &left, long right) { return left == BigNumT<Base>(right); }
 
 template<typename Base>
-constexpr bool operator==(long left, const BigNumT<Base> &right) { return right == left; }
+bool operator==(long left, const BigNumT<Base> &right) { return right == left; }
 
 template<typename Base>
-constexpr bool operator!=(const BigNumT<Base> &left, long right) { return !(left == right); }
+bool operator!=(const BigNumT<Base> &left, long right) { return !(left == right); }
 
 template<typename Base>
-constexpr bool operator!=(long left, const BigNumT<Base> &right) { return right != left; }
+bool operator!=(long left, const BigNumT<Base> &right) { return right != left; }

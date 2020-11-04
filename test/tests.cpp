@@ -12,9 +12,6 @@ static std::ostream &operator<<(std::ostream &os, const BigChar &b)
 
 TEST_CASE("BigNums can be initialized")
 {
-  REQUIRE(BigChar(0).toBase() == 0);
-  REQUIRE(BigChar(1).toBase() == 1);
-
   REQUIRE(BigChar(0) == 0);
   REQUIRE(BigChar(1) == 1);
   REQUIRE(BigChar(-1) == -1);
@@ -23,9 +20,6 @@ TEST_CASE("BigNums can be initialized")
 
   REQUIRE_FALSE(BigChar(1) == 0);
   REQUIRE_FALSE(BigChar(1) != 1);
-
-  //  REQUIRE(BigChar({ 0 }) == BigChar({ 0, 0 }));
-  //  REQUIRE(BigChar({ 0xFF }) == BigChar({ 0xFF, 0xFF }));
 }
 
 TEST_CASE("Negative values")
@@ -49,10 +43,24 @@ TEST_CASE("BigNums equal longs")
   REQUIRE(BigChar(i) != BigChar(i + 0x100000000l));
 }
 
-TEST_CASE("If the longs don't equal, neither do the BigNums")
+SCENARIO("Binary operations")
 {
-  auto i = GENERATE(take(100, random(std::numeric_limits<long>::min(), std::numeric_limits<long>::max())));
-  auto j = GENERATE(take(100, random(std::numeric_limits<long>::min(), std::numeric_limits<long>::max())));
+  GIVEN("A long")
+  {
+    auto i = GENERATE(take(100, random(std::numeric_limits<long>::min() + 1, std::numeric_limits<long>::max())));
 
-  REQUIRE((BigChar(i) == BigChar(j)) == (i == j));
+    CHECK(BigChar(i) == BigChar(i));
+    CHECK_FALSE(BigChar(i) != BigChar(i));
+    CHECK_FALSE(BigChar(i) < BigChar(i));
+
+    AND_GIVEN("A smaller long")
+    {
+      auto j = GENERATE_COPY(take(100, random(std::numeric_limits<long>::min(), i - 1)));
+
+      CHECK_FALSE(BigChar(i) == BigChar(j));
+      CHECK(BigChar(i) != BigChar(j));
+      //      CHECK(BigChar(j) < BigChar(i));
+      //      CHECK_FALSE(BigChar(i) < BigChar(j));
+    }
+  }
 }
