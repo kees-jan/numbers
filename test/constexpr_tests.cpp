@@ -7,16 +7,13 @@
 
 using BigChar = BigNumT<unsigned char>;
 
-static std::ostream& operator<<(std::ostream& os, const BigChar& b)
+static std::ostream &operator<<(std::ostream &os, const BigChar &b)
 {
   return b.dumpTo(os);
 }
 
 TEST_CASE("BigNums can be initialized", "[Bignum]")
 {
-  REQUIRE(BigChar(0).toBase() == 0);
-  REQUIRE(BigChar(1).toBase() == 1);
-
   REQUIRE(BigChar(0) == 0);
   REQUIRE(BigChar(1) == 1);
   REQUIRE(BigChar(-1) == -1);
@@ -34,8 +31,7 @@ TEST_CASE("BigNums equal longs")
 
   REQUIRE(BigChar(i) == i);
   REQUIRE(BigChar(i) == BigChar(i));
-  REQUIRE(BigChar(i) != BigChar(i+0x100000000l));
-
+  REQUIRE(BigChar(i) != BigChar(i + 0x100000000l));
 }
 
 TEST_CASE("If the longs don't equal, neither do the BigNums")
@@ -43,5 +39,5 @@ TEST_CASE("If the longs don't equal, neither do the BigNums")
   auto i = GENERATE(take(100, random(std::numeric_limits<long>::min(), std::numeric_limits<long>::max())));
   auto j = GENERATE(take(100, random(std::numeric_limits<long>::min(), std::numeric_limits<long>::max())));
 
-  REQUIRE((BigChar(i)==BigChar(j)) == (i==j));
+  REQUIRE((BigChar(i) == BigChar(j)) == (i == j));
 }
