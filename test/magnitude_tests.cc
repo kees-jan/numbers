@@ -74,7 +74,18 @@ SCENARIO("Magnitude binary operations")
     CHECK(mone + mi == mj);
     {
       auto copy(mi);
-      // CHECK(++copy == mj);
+      CHECK(&++copy == &copy);
+      CHECK(copy == mj);
+    }
+    {
+      auto copy(mi);
+      CHECK(copy++ == mi);
+      CHECK(copy == mj);
+    }
+    {
+      auto copy(mi);
+      CHECK(&(copy += mone) == &copy);
+      CHECK(copy == mj);
     }
   }
 }

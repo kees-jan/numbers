@@ -4,6 +4,8 @@
 #include <vector>
 #include <utility>
 
+// #include <boost/operators.hpp>
+
 namespace Detail {
 
 template<typename Base>
@@ -60,39 +62,71 @@ public:
   {
     Me result;
     result.value.reserve(1 + std::max(value.size(), other.value.size()));
+    std::copy(value.begin(), value.end(), std::back_inserter(result.value));
 
-    unsigned long long carry = 0;
-    auto ileft = value.begin();
-    auto iright = other.value.begin();
-    for (; ileft != value.end() && iright != other.value.end(); ++ileft, ++iright) {
-      const unsigned long long r = carry + *ileft + *iright;
-      result.value.push_back(static_cast<Base>(r & mask));
-      carry = r >> size;
-    }
+    assert(result == *this);
 
-    // Either ileft or iright is at its end
-    for (; ileft != value.end(); ++ileft) {
-      const unsigned long long r = carry + *ileft;
-      result.value.push_back(static_cast<Base>(r & mask));
-      carry = r >> size;
-    }
-    for (; iright != other.value.end(); ++iright) {
-      const unsigned long long r = carry + *iright;
-      result.value.push_back(static_cast<Base>(r & mask));
-      carry = r >> size;
-    }
-
-    // We possibly have a carry
-    if (carry != 0u) {
-      assert(carry <= mask);
-      result.value.push_back(static_cast<Base>(carry));
-    }
+    result += other;
 
     return result;
   }
 
   Me &operator++()
   {
+    unsigned long long carry = 1;
+    for (auto &v : value) {
+      const unsigned long long r = carry + v;
+      v = static_cast<Base>(r & mask);
+      carry = r >> size;
+    }
+
+    // We possibly have a carry
+    if (carry != 0u) {
+      assert(carry <= mask);
+      value.push_back(static_cast<Base>(carry));
+    }
+
+    return *this;
+  }
+
+  [[nodiscard]] Me operator++(int)
+  {
+    Me result(*this);
+    ++*this;
+    return result;
+  }
+
+  Me &operator+=(const Me &other)
+  {
+    value.reserve(std::max(value.size(), 1 + other.value.size()));
+
+    unsigned long long carry = 0;
+    auto ileft = value.begin();
+    auto iright = other.value.begin();
+    for (; ileft != value.end() && iright != other.value.end(); ++ileft, ++iright) {
+      const unsigned long long r = carry + *ileft + *iright;
+      *ileft = static_cast<Base>(r & mask);
+      carry = r >> size;
+    }
+
+    // Either ileft or iright is at its end
+    for (; ileft != value.end() && carry != 0; ++ileft) {
+      const unsigned long long r = carry + *ileft;
+      *ileft = static_cast<Base>(r & mask);
+      carry = r >> size;
+    }
+    for (; iright != other.value.end(); ++iright) {
+      const unsigned long long r = carry + *iright;
+      value.push_back(static_cast<Base>(r & mask));
+      carry = r >> size;
+    }
+
+    // We possibly have a carry
+    if (carry != 0u) {
+      assert(carry <= mask);
+      value.push_back(static_cast<Base>(carry));
+    }
+
     return *this;
   }
 
