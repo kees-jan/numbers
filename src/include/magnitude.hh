@@ -38,6 +38,11 @@ public:
     return os;
   }
 
+  [[nodiscard]] long operator<=>(const Me &other) const
+  {
+    return compare(*this, other);
+  }
+
   [[nodiscard]] bool operator==(const Me &other) const
   {
     assert(isNormalized());
@@ -49,26 +54,6 @@ public:
   [[nodiscard]] bool operator!=(const Me &other) const
   {
     return !(other == *this);//NOLINT:(Simplify)
-  }
-
-  [[nodiscard]] bool operator<(const Me &other) const
-  {
-    return compare(*this, other) < 0;
-  }
-
-  [[nodiscard]] bool operator<=(const Me &other) const
-  {
-    return compare(*this, other) <= 0;
-  }
-
-  [[nodiscard]] bool operator>(const Me &other) const
-  {
-    return compare(*this, other) > 0;
-  }
-
-  [[nodiscard]] bool operator>=(const Me &other) const
-  {
-    return compare(*this, other) >= 0;
   }
 
   [[nodiscard]] Me operator+(const Me &other) const
