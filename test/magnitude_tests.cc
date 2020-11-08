@@ -35,7 +35,7 @@ SCENARIO("Magnitude binary operations")
 {
   GIVEN("An int")
   {
-    const auto i = GENERATE(0xFFu, 0x100u, 0xFFFFu, 0x10000u, 0xFFFFFFu);
+    const auto i = GENERATE(0xFFu, 0x100u, 0xFFFFu, 0x10000u, 0xFF0FFFu, 0xFFFFFFu);
     const MagChar mi(i);
 
     CHECK(mi == mi);
@@ -74,7 +74,7 @@ SCENARIO("Magnitude binary operations")
     CHECK(mone + mi == mj);
     {
       auto copy(mi);
-      // CHECK(++copy == mj)
+      // CHECK(++copy == mj);
     }
   }
 }

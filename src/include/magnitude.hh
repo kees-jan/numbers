@@ -58,37 +58,42 @@ public:
 
   [[nodiscard]] Me operator+(const Me &other) const
   {
-    std::vector<Base> result;
-    result.reserve(1 + std::max(value.size(), other.value.size()));
+    Me result;
+    result.value.reserve(1 + std::max(value.size(), other.value.size()));
 
     unsigned long long carry = 0;
     auto ileft = value.begin();
     auto iright = other.value.begin();
     for (; ileft != value.end() && iright != other.value.end(); ++ileft, ++iright) {
       const unsigned long long r = carry + *ileft + *iright;
-      result.push_back(static_cast<Base>(r & mask));
+      result.value.push_back(static_cast<Base>(r & mask));
       carry = r >> size;
     }
 
     // Either ileft or iright is at its end
     for (; ileft != value.end(); ++ileft) {
       const unsigned long long r = carry + *ileft;
-      result.push_back(static_cast<Base>(r & mask));
+      result.value.push_back(static_cast<Base>(r & mask));
       carry = r >> size;
     }
     for (; iright != other.value.end(); ++iright) {
       const unsigned long long r = carry + *iright;
-      result.push_back(static_cast<Base>(r & mask));
+      result.value.push_back(static_cast<Base>(r & mask));
       carry = r >> size;
     }
 
     // We possibly have a carry
     if (carry != 0u) {
       assert(carry <= mask);
-      result.push_back(static_cast<Base>(carry));
+      result.value.push_back(static_cast<Base>(carry));
     }
 
-    return Me(std::move(result));
+    return result;
+  }
+
+  Me &operator++()
+  {
+    return *this;
   }
 
 private:
