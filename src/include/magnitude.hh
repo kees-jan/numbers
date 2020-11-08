@@ -4,12 +4,12 @@
 #include <vector>
 #include <utility>
 
-// #include <boost/operators.hpp>
+#include <boost/operators.hpp>
 
 namespace Detail {
 
 template<typename Base>
-class [[nodiscard]] Magnitude
+class [[nodiscard]] Magnitude : public boost::addable<Magnitude<Base>>
 {
 public:
   using Me = Magnitude<Base>;
@@ -56,19 +56,6 @@ public:
   [[nodiscard]] bool operator!=(const Me &other) const
   {
     return !(other == *this);//NOLINT:(Simplify)
-  }
-
-  [[nodiscard]] Me operator+(const Me &other) const
-  {
-    Me result;
-    result.value.reserve(1 + std::max(value.size(), other.value.size()));
-    std::copy(value.begin(), value.end(), std::back_inserter(result.value));
-
-    assert(result == *this);
-
-    result += other;
-
-    return result;
   }
 
   Me &operator++()

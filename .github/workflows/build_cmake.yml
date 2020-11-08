@@ -25,6 +25,7 @@ jobs:
       - name: Install conan
         shell: bash
         run: |
+          sudo apt install libboost-dev
           python3 -m pip install --upgrade pip setuptools
           python3 -m pip install conan
           source ~/.profile
