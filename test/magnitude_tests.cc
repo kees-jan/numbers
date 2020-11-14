@@ -72,6 +72,10 @@ SCENARIO("Magnitude binary operations")
     CHECK(mi + mone == mj);
     CHECK(mzero + mi == mi);
     CHECK(mone + mi == mj);
+    CHECK(mi - mzero == mi);
+    CHECK(mj - mone == mi);
+    CHECK(mj - mi == mone);
+    CHECK(mi - mi == mzero);
     {
       auto copy(mi);
       CHECK(&++copy == &copy);
@@ -86,6 +90,21 @@ SCENARIO("Magnitude binary operations")
       auto copy(mi);
       CHECK(&(copy += mone) == &copy);
       CHECK(copy == mj);
+    }
+    {
+      auto copy(mj);
+      CHECK(&--copy == &copy);
+      CHECK(copy == mi);
+    }
+    {
+      auto copy(mj);
+      CHECK(copy-- == mj);
+      CHECK(copy == mi);
+    }
+    {
+      auto copy(mj);
+      CHECK(&(copy -= mone) == &copy);
+      CHECK(copy == mi);
     }
   }
 }

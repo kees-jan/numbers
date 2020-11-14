@@ -10,6 +10,7 @@ namespace Detail {
 
 template<typename Base>
 class [[nodiscard]] Magnitude : public boost::addable<Magnitude<Base>>
+  , public boost::subtractable<Magnitude<Base>>
 {
 public:
   using Me = Magnitude<Base>;
@@ -76,10 +77,32 @@ public:
     return *this;
   }
 
+  Me &operator--()
+  {
+    assert(isNormalized() && !value.empty());
+    long long carry = -1;
+    for (auto &v : value) {
+      long long r = carry + v;
+      v = static_cast<Base>(r & mask);
+      carry = r >> size;
+    }
+
+    normalize();
+
+    return *this;
+  }
+
   [[nodiscard]] Me operator++(int)
   {
     Me result(*this);
     ++*this;
+    return result;
+  }
+
+  [[nodiscard]] Me operator--(int)
+  {
+    Me result(*this);
+    --*this;
     return result;
   }
 
@@ -117,10 +140,39 @@ public:
     return *this;
   }
 
+  Me &operator-=(const Me &other)
+  {
+    assert(other <= *this);
+
+    long long carry = 0;
+    auto ileft = value.begin();
+    auto iright = other.value.begin();
+    for (; iright != other.value.end(); ++ileft, ++iright) {
+      assert(ileft != value.end());
+
+      const long long r = *ileft - *iright + carry;
+      *ileft = static_cast<Base>(r & mask);
+      carry = r >> size;
+    }
+
+    for (; ileft != value.end() && carry != 0; ++ileft) {
+      const long long r = *ileft + carry;
+      *ileft = static_cast<Base>(r & mask);
+      carry = r >> size;
+    }
+
+    // right <= left, so no carry at this point.
+    assert(carry == 0);
+
+    normalize();
+
+    return *this;
+  }
+
 private:
   std::vector<Base> value;
-  static const Base mask = std::numeric_limits<Base>::max();
-  static const Base size = std::numeric_limits<Base>::digits;
+  static constexpr const Base mask = std::numeric_limits<Base>::max();
+  static constexpr const Base size = std::numeric_limits<Base>::digits;
 
   explicit Magnitude(std::vector<Base> &&v) : value(std::move(v)) { assert(isNormalized()); }
 
