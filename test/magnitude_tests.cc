@@ -108,3 +108,21 @@ SCENARIO("Magnitude binary operations")
     }
   }
 }
+
+SCENARIO("Magnitude multiplication")
+{
+  const MagChar mzero(0);
+  const MagChar mone(1);
+  const MagChar mtwo(2);
+
+  CHECK(mzero * mzero == mzero);
+  CHECK(mzero * mone == mzero);
+  CHECK(mone * mzero == mzero);
+  CHECK(mone * mone == mone);
+  CHECK(mone * mtwo == mtwo);
+  CHECK(mtwo * mone == mtwo);
+  CHECK(mtwo * mtwo == MagChar(4));
+
+  CHECK(MagChar(128) * mtwo == MagChar(256));
+  CHECK(MagChar(256) * MagChar(256) == MagChar(256 * 256));
+}

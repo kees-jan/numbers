@@ -11,6 +11,7 @@ namespace Detail {
 template<typename Base>
 class [[nodiscard]] Magnitude : public boost::addable<Magnitude<Base>>
   , public boost::subtractable<Magnitude<Base>>
+  , public boost::multipliable<Magnitude<Base>>
 {
 public:
   using Me = Magnitude<Base>;
@@ -169,6 +170,19 @@ public:
     return *this;
   }
 
+  Me &operator*=(const Me &right)
+  {
+    const Me left(std::move(*this));
+    value.clear();
+    value.reserve(left.value.size() + right.value.size() + 1);
+
+    for (unsigned i = 0; i < right.value.size(); i++) {
+      *this += mul(left, right.value[i], i);
+    }
+
+    return *this;
+  }
+
 private:
   std::vector<Base> value;
   static constexpr const Base mask = std::numeric_limits<Base>::max();
@@ -225,6 +239,29 @@ private:
   [[nodiscard]] static Base toBase(const T v)
   {
     return static_cast<Base>(v);
+  }
+
+  static Me mul(const Me &left, const Base right, const unsigned offset)
+  {
+    Me result;
+
+    if (right != 0) {
+      result.value.reserve(offset + left.value.size() + 1);
+      fill_n(back_inserter(result.value), offset, 0);
+
+      unsigned long long carry = 0;
+      for (auto v : left.value) {
+        const unsigned long long r = carry + v * right;
+        result.value.push_back(r & mask);
+        carry = r >> size;
+      }
+      while (carry != 0u) {
+        result.value.push_back(carry & mask);
+        carry >>= size;
+      }
+    }
+
+    return result;
   }
 };
 
