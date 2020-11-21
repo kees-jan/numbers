@@ -13,7 +13,7 @@ static std::ostream &operator<<(std::ostream &os, const Magnitude<Base> &b)
 }
 }// namespace Detail
 
-namespace std {
+namespace std {// NOLINT: cert-dcl58-cpp
 template<typename T>
 static std::ostream &operator<<(std::ostream &os, const std::vector<T> &c)
 {
@@ -40,16 +40,16 @@ SCENARIO("Magnitude binary operations")
 
     CHECK(mi == mi);
     CHECK_FALSE(mi != mi);
-    CHECK(mi != MagChar(i + 0x100000000u));
-    CHECK_FALSE(mi == MagChar(i + 0x100000000u));
+    CHECK(mi != MagChar(i + 0x100000000U));
+    CHECK_FALSE(mi == MagChar(i + 0x100000000U));
 
     CHECK_FALSE(mi < mi);
     CHECK(mi <= mi);
     CHECK_FALSE(mi > mi);
     CHECK(mi >= mi);
 
-    const auto zero = 0u;
-    const auto one = 1u;
+    const auto zero = 0U;
+    const auto one = 1U;
     const auto j = i + one;
 
     const MagChar mzero(zero);

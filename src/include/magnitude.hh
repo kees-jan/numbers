@@ -70,7 +70,7 @@ public:
     }
 
     // We possibly have a carry
-    if (carry != 0u) {
+    if (carry != 0U) {
       assert(carry <= mask);
       value.push_back(static_cast<Base>(carry));
     }
@@ -93,14 +93,14 @@ public:
     return *this;
   }
 
-  [[nodiscard]] Me operator++(int)
+  [[nodiscard]] Me operator++(int) &// NOLINT: cert-dcl21-cpp
   {
     Me result(*this);
     ++*this;
     return result;
   }
 
-  [[nodiscard]] Me operator--(int)
+  [[nodiscard]] Me operator--(int) &// NOLINT: cert-dcl21-cpp
   {
     Me result(*this);
     --*this;
@@ -133,7 +133,7 @@ public:
     }
 
     // We possibly have a carry
-    if (carry != 0u) {
+    if (carry != 0U) {
       assert(carry <= mask);
       value.push_back(static_cast<Base>(carry));
     }
@@ -255,7 +255,7 @@ private:
         result.value.push_back(r & mask);
         carry = r >> size;
       }
-      while (carry != 0u) {
+      while (carry != 0U) {
         result.value.push_back(carry & mask);
         carry >>= size;
       }
